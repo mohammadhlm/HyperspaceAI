@@ -377,6 +377,41 @@ check_node_running() {
     return 1
 }
 
+# Функция проверки и восстановления подключения
+check_connection() {
+    echo "Проверка подключения к Hive..."
+    if ! aios-cli hive whoami | grep -q "Public:"; then
+        echo "❌ Потеряно подключение к Hive"
+        echo "Пробуем восстановить..."
+        
+        # Останавливаем процессы
+        aios-cli kill
+        pkill -f "aios"
+        sleep 3
+        
+        # Перезапускаем демон
+        screen -dmS Hypernodes aios-cli start
+        sleep 10
+        
+        # Переподключаемся
+        aios-cli hive login
+        sleep 5
+        aios-cli hive connect
+        sleep 5
+        
+        if aios-cli hive whoami | grep -q "Public:"; then
+            echo "✅ Подключение восстановлено"
+            return 0
+        else
+            echo "❌ Не удалось восстановить подключение"
+            return 1
+        fi
+    else
+        echo "✅ Подключение активно"
+        return 0
+    fi
+}
+
 # Основная логика
 while true; do
     show_menu
@@ -785,4 +820,10 @@ while true; do
             exit 0
             ;;
     esac
-done 
+done
+
+# Добавляем проверку в основной цикл
+while true; do
+    check_connection
+    sleep 300 # Проверяем каждые 5 минут
+done & 
