@@ -1,108 +1,106 @@
-#!/bin/bash
-
-# Функция для отображения заголовка
+# Function to show the header
 show_header() {
     clear
     echo "==============================================="
-    echo "    Установка и настройка Hyperspace Node"
+    echo "    Installation and Configuration of Hyperspace Node"
     echo "==============================================="
-    echo "Подпишитесь на наш Telegram канал @nodetrip"
-    echo "для получения последних обновлений и поддержки"
+    echo "Subscribe to our Telegram channel @nodetrip"
+    echo "for the latest updates and support"
     echo "==============================================="
     echo
 }
 
-# Функция для отображения инструкции
+# Function to show instructions
 show_instructions() {
     show_header
-    echo "Простая установка Hyperspace Node:"
-    echo "1. Установите ноду"
-    echo "2. Вставьте ваш приватный ключ"
-    echo "3. Выберите tier в зависимости от RAM"
-    echo "   (tier 3 для RAM > 8GB, tier 5 для RAM < 8GB)"
-    echo "4. Дождитесь начисления первых поинтов (~30-60 минут)"
+    echo "Simple installation of Hyperspace Node:"
+    echo "1. Install the node"
+    echo "2. Insert your private key"
+    echo "3. Choose a tier based on RAM"
+    echo "   (tier 3 for RAM > 8GB, tier 5 for RAM < 8GB)"
+    echo "4. Wait for the first points to be credited (~30-60 minutes)"
     echo
-    echo "Нажмите Enter для продолжения..."
+    echo "Press Enter to continue..."
     read
 }
 
-# Основное меню
+# Main menu
 show_menu() {
     show_header
-    echo "Выберите действие:"
-    echo "1. Установить Hyperspace Node"
-    echo "2. Управление нодой"
-    echo "3. Проверка статуса"
-    echo "4. Удалить ноду"
-    echo "5. Показать инструкцию"
-    echo "6. Выход"
+    echo "Choose an action:"
+    echo "1. Install Hyperspace Node"
+    echo "2. Manage node"
+    echo "3. Check status"
+    echo "4. Remove node"
+    echo "5. Show instructions"
+    echo "6. Exit"
     echo
-    echo -n "Ваш выбор (1-6): "
+    echo -n "Your choice (1-6): "
 }
 
-# Подменю управления нодой
+# Node management submenu
 node_menu() {
     show_header
     if ! check_installation; then
-        echo "Ошибка: aios-cli не установлен. Сначала выполните установку (пункт 1)"
-        echo "Нажмите Enter для продолжения..."
+        echo "Error: aios-cli is not installed. Please perform the installation first (item 1)"
+        echo "Press Enter to continue..."
         read
         return
     fi
-    echo "Управление нодой:"
-    echo "1. Запустить ноду"
-    echo "2. Выбрать tier"
-    echo "3. Добавить модель по умолчанию"
-    echo "4. Подключиться к Hive"
-    echo "5. Проверить заработанные поинты"
-    echo "6. Управление моделями"
-    echo "7. Проверить статус подключения"
-    echo "8. Остановить ноду"
-    echo "9. Перезапуск с очисткой"
-    echo "10. Вернуться в главное меню"
+    echo "Node management:"
+    echo "1. Start node"
+    echo "2. Select tier"
+    echo "3. Add default model"
+    echo "4. Connect to Hive"
+    echo "5. Check earned points"
+    echo "6. Manage models"
+    echo "7. Check connection status"
+    echo "8. Stop node"
+    echo "9. Restart with cleanup"
+    echo "10. Return to main menu"
     echo
-    echo -n "Ваш выбор (1-10): "
+    echo -n "Your choice (1-10): "
 }
 
-# Функция установки и настройки ключей
+# Function to set up and configure keys
 setup_keys() {
-    # Проверяем существующие ключи
+    # Check for existing keys
     if [ -f my.pem ]; then
-        echo "Обнаружен существующий файл ключа."
-        echo -n "Хотите использовать новый ключ? (y/N): "
+        echo "An existing key file was found."
+        echo -n "Do you want to use a new key? (y/N): "
         read replace_key
         if [[ $replace_key != "y" && $replace_key != "Y" ]]; then
-            echo "Продолжаем использовать существующий ключ."
+            echo "Continuing to use the existing key."
             return
         fi
     fi
 
-    echo "Введите приватный ключ:"
+    echo "Enter private key:"
     read private_key
     
-    # Очищаем ключ от лишних символов
+    # Remove unnecessary characters from the key
     private_key=$(echo "$private_key" | tr -d '[:space:]')
     
-    # Сохраняем ключ
+    # Save the key
     echo "$private_key" > my.pem
     chmod 600 my.pem
     
-    # Проверяем содержимое файла
-    echo "Проверка сохраненного ключа:"
+    # Check the file contents
+    echo "Checking the saved key:"
     hexdump -C my.pem
     
     if command -v aios-cli &> /dev/null; then
-        # Останавливаем все процессы
-        echo "Останавливаем старые процессы..."
+        # Stop all processes
+        echo "Stopping old processes..."
         aios-cli kill
         pkill -f "aios"
         
-        # Закрываем все screen сессии
-        echo "Закрываем screen сессии..."
+        # Close all screen sessions
+        echo "Closing screen sessions..."
         screen -ls | grep Hypernodes | cut -d. -f1 | awk '{print $1}' | xargs -I % screen -X -S % quit
         sleep 2
         
-        # Сохраняем бинарный файл
+        # Save the binary file
         if [ -f ~/.aios/aios-cli ]; then
             mv ~/.aios/aios-cli /tmp/
         fi
@@ -112,72 +110,72 @@ setup_keys() {
             mv /tmp/aios-cli ~/.aios/
         fi
         
-        # Переустанавливаем
-        echo "Переустанавливаем aios-cli..."
+        # Reinstall
+        echo "Reinstalling aios-cli..."
         curl https://download.hyper.space/api/install | bash
         source /root/.bashrc
         sleep 5
         
-        # Закрываем все screen сессии
-        echo "Закрываем screen сессии..."
+        # Close all screen sessions
+        echo "Closing screen sessions..."
         screen -ls | grep Hypernodes | cut -d. -f1 | awk '{print $1}' | xargs -I % screen -X -S % quit
         sleep 2
         
-        # Запускаем демон в screen с логированием
-        echo "Запускаем aios-cli..."
+        # Start daemon in screen with logging
+        echo "Starting aios-cli..."
         screen -L -Logfile ~/.aios/screen.log -dmS Hypernodes aios-cli start
         sleep 10
         
-        # Проверяем что процесс запущен
+        # Check if the process is running
         if ! ps aux | grep -q "[_]aios-kernel"; then
-            echo "Ошибка: процесс не запущен"
-            echo "Проверяем логи демона..."
+            echo "Error: process is not running"
+            echo "Checking daemon logs..."
             tail -n 50 ~/.aios/screen.log
             return 1
         fi
         
-        # Сначала импортируем ключ
-        echo "Импортируем ключ..."
+        # First, import the key
+        echo "Importing key..."
         aios-cli hive import-keys ./my.pem
         sleep 5
         
-        # Логинимся
-        echo "Выполняем вход..."
+        # Log in
+        echo "Logging in..."
         aios-cli hive login
         sleep 5
         
-        # Проверяем что ключ импортирован
+        # Check that the key is imported
         if ! aios-cli hive whoami | grep -q "Public:"; then
-            echo "Ошибка: ключ не импортирован"
+            echo "Error: key not imported"
             return 1
         fi
         
-        # Подключаемся к Hive
-        echo "Подключаемся к Hive..."
+        # Connect to Hive
+        echo "Connecting to Hive..."
         aios-cli hive connect
         sleep 10
         
-        # Устанавливаем tier
-        echo "Устанавливаем tier..."
+        # Set tier
+        echo "Setting tier..."
         aios-cli hive select-tier 5
         sleep 10
         
-        # Проверяем tier
+        # Check tier
         if ! aios-cli hive points | grep -q "Tier: 5"; then
-            echo "Ошибка: не удалось установить tier"
+            echo "Error: failed to set tier"
             return 1
         fi
         
-        # Добавляем модель
-        echo "Добавляем модель..."
+        # Add model
+        echo "Adding model..."
         aios-cli models add hf:TheBloke/phi-2-GGUF:phi-2.Q4_K_M.gguf
         sleep 10
         
-        # Проверяем что модель скачалась
-        echo "Проверяем статус модели..."
+        # Check that model downloaded
+        echo "Checking model status..."
         if ! aios-cli models list | grep -q "phi-2"; then
-            echo "Ожидаем загрузку модели..."
-            for i in {1..12}; do  # Ждем максимум 2 минуты
+            echo "Waiting for the model to load..."
+            for i in {1..12}; do  # Wait a maximum of 2 minutes
                 if aios-cli models list | grep -q "phi-2"; then
                     break
                 fi
@@ -186,11 +184,11 @@ setup_keys() {
             done
         fi
         
-        # Проверяем что модель инициализирована
-        echo "Проверяем инициализацию модели..."
+        # Check if the model is initialized
+        echo "Checking model initialization..."
         if ! grep -q "llm_load_print_meta: model size" ~/.aios/screen.log; then
-            echo "Ожидаем инициализацию модели..."
-            for i in {1..6}; do  # Ждем максимум 1 минуту
+            echo "Waiting for the model to initialize..."
+            for i in {1..6}; do  # Wait a maximum of 1 minute
                 if grep -q "llm_load_print_meta: model size" ~/.aios/screen.log; then
                     break
                 fi
@@ -199,9 +197,9 @@ setup_keys() {
             done
         fi
         
-        # Если модель не зарегистрирована, перезапускаем
+        # If the model is not registered, restart
         if aios-cli hive whoami | grep -q "Failed to register models"; then
-            echo "Перезапускаем демон для регистрации модели..."
+            echo "Restarting the daemon to register the model..."
             aios-cli kill
             pkill -f "aios"
             sleep 3
@@ -209,37 +207,37 @@ setup_keys() {
             screen -L -Logfile ~/.aios/screen.log -dmS Hypernodes aios-cli start
             sleep 10
             
-            # Проверяем что screen создался
+            # Check that the screen was created
             if ! screen -ls | grep -q "Hypernodes"; then
-                echo "Ошибка: screen сессия не создана"
+                echo "Error: screen session not created"
                 return 1
             fi
             
             aios-cli hive connect
             sleep 5
             
-            # Проверяем статус
-            echo "Проверяем статус..."
+            # Check status
+            echo "Checking status..."
             aios-cli hive whoami
             aios-cli models list
             
-            # Финальная проверка
+            # Final check
             if ! aios-cli hive whoami | grep -q "Successfully connected"; then
-                echo "Ошибка: не удалось подключиться к Hive"
+                echo "Error: failed to connect to Hive"
                 return 1
             fi
             
-            echo "✅ Нода успешно настроена и готова к работе!"
+            echo "✅ Node successfully configured and ready to work!"
         fi
     else
-        echo "Ошибка: aios-cli не найден"
+        echo "Error: aios-cli not found"
     fi
 }
 
-# Функция проверки установки
+# Function to check installation
 check_installation() {
     if ! command -v aios-cli &> /dev/null; then
-        echo "aios-cli не найден. Перезагружаем окружение..."
+        echo "aios-cli not found. Reloading environment..."
         export PATH="$PATH:/root/.aios"
         source /root/.bashrc
         
@@ -250,42 +248,42 @@ check_installation() {
     return 0
 }
 
-# Функция проверки статуса ноды
+# Function to check node status
 check_node_status() {
-    echo "Проверка статуса ноды..."
+    echo "Checking node status..."
     
-    # Проверяем запущена ли нода
+    # Check if the node is running
     if ! ps aux | grep -q "[_]aios-kernel"; then
-        echo "❌ Нода не запущена"
-        echo "Запускаем ноду..."
+        echo "❌ Node is not running"
+        echo "Starting the node..."
         
-        # Останавливаем все процессы
+        # Stop all processes
         aios-cli kill
         pkill -f "aios"
         sleep 3
         
-        # Закрываем все screen сессии
+        # Close all screen sessions
         screen -ls | grep Hypernodes | cut -d. -f1 | awk '{print $1}' | xargs -I % screen -X -S % quit
         sleep 2
         
-        # Запускаем демон
+        # Start the daemon
         screen -L -Logfile ~/.aios/screen.log -dmS Hypernodes aios-cli start
         sleep 10
         
-        # Проверяем что процесс запущен
+        # Check if the process is running
         if ! ps aux | grep -q "[_]aios-kernel"; then
-            echo "Ошибка: не удалось запустить ноду"
+            echo "Error: failed to start the node"
             return 1
         fi
         
-        # Логинимся
-        echo "Выполняем вход..."
+        # Log in
+        echo "Logging in..."
         aios-cli hive login
         sleep 5
     fi
     
-    # Проверяем и восстанавливаем подключение к Hive
-    echo "Проверяем подключение к Hive..."
+    # Check and restore connection to Hive
+    echo "Checking connection to Hive..."
     max_attempts=3
     attempt=1
     connected=false
@@ -293,18 +291,18 @@ check_node_status() {
     while [ $attempt -le $max_attempts ]; do
         if aios-cli hive whoami 2>&1 | grep -q "Public:"; then
             connected=true
-            echo "✅ Успешно подключились к Hive"
+            echo "✅ Successfully connected to Hive"
             break
         fi
-        echo "Попытка $attempt из $max_attempts подключиться к Hive..."
+        echo "Attempt $attempt of $max_attempts to connect to Hive..."
         aios-cli hive connect
         sleep 10
         attempt=$((attempt + 1))
     done
     
     if [ "$connected" = false ]; then
-        echo "❌ Не удалось подключиться к Hive после $max_attempts попыток"
-        echo "Пробуем перезапустить ноду..."
+        echo "❌ Failed to connect to Hive after $max_attempts attempts"
+        echo "Trying to restart the node..."
         aios-cli kill
         sleep 5
         screen -dmS Hypernodes aios-cli start
@@ -314,138 +312,138 @@ check_node_status() {
         aios-cli hive connect
     fi
     
-    # Проверяем статус
-    echo "1. Проверка ключей:"
+    # Check status
+    echo "1. Checking keys:"
     aios-cli hive whoami
     
-    echo "2. Проверка points:"
+    echo "2. Checking points:"
     if ! aios-cli hive points; then
-        echo "Ошибка получения points, проверьте подключение к Hive"
-        echo "Пробуем восстановить подключение..."
+        echo "Error obtaining points, check connection to Hive"
+        echo "Trying to restore connection..."
         aios-cli hive login
         sleep 5
         aios-cli hive connect
         sleep 5
-        echo "Повторная проверка points..."
+        echo "Rechecking points..."
         aios-cli hive points
     fi
     
-    echo "3. Проверка моделей:"
-    echo "Активные модели:"
+    echo "3. Checking models:"
+    echo "Active models:"
     aios-cli models list
     echo
-    echo "Доступные модели:"
+    echo "Available models:"
     aios-cli models available
     
     return 0
 }
 
-# Функция диагностики
+# Diagnostic function
 diagnose_installation() {
-    echo "=== Диагностика установки ==="
-    echo "1. Проверка путей:"
+    echo "=== Installation Diagnostics ==="
+    echo "1. Checking paths:"
     echo "PATH=$PATH"
     echo
-    echo "2. Проверка бинарного файла:"
+    echo "2. Checking binary file:"
     ls -l /root/.aios/aios-cli
     echo
-    echo "3. Проверка версии:"
+    echo "3. Checking version:"
     /root/.aios/aios-cli hive version
     echo
-    echo "4. Проверка конфигурации:"
+    echo "4. Checking configuration:"
     ls -la ~/.aios/
     echo
-    echo "5. Проверка подключения к сети:"
+    echo "5. Checking network connection:"
     curl -Is https://download.hyper.space | head -1
     echo
-    echo "6. Проверка статуса службы:"
+    echo "6. Checking service status:"
     ps aux | grep aios-cli
     echo
-    echo "7. Проверка логов:"
-    tail -n 20 ~/.aios/logs/* 2>/dev/null || echo "Логи не найдены"
+    echo "7. Checking logs:"
+    tail -n 20 ~/.aios/logs/* 2>/dev/null || echo "Logs not found"
     echo
-    echo "=== Конец диагностики ==="
+    echo "=== End of diagnostics ==="
 }
 
-# Функция проверки запущенной ноды
+# Check if node is running
 check_node_running() {
     if pgrep -f "__aios-kernel" >/dev/null || pgrep -f "aios-cli start" >/dev/null; then
-        echo "Нода уже запущена"
+        echo "Node is already running"
         ps aux | grep -E "aios-cli|__aios-kernel" | grep -v grep
         return 0
     fi
     return 1
 }
 
-# Функция проверки и восстановления подключения
+# Check and restore connection
 check_connection() {
-    echo "Проверка подключения к Hive..."
+    echo "Checking connection to Hive..."
     if ! aios-cli hive whoami | grep -q "Public:"; then
-        echo "❌ Потеряно подключение к Hive"
-        echo "Пробуем восстановить..."
+        echo "❌ Lost connection to Hive"
+        echo "Trying to restore..."
         
-        # Останавливаем процессы
+        # Stop processes
         aios-cli kill
         pkill -f "aios"
         sleep 3
         
-        # Перезапускаем демон
+        # Restart the daemon
         screen -dmS Hypernodes aios-cli start
         sleep 10
         
-        # Переподключаемся
+        # Reconnect
         aios-cli hive login
         sleep 5
         aios-cli hive connect
         sleep 5
         
         if aios-cli hive whoami | grep -q "Public:"; then
-            echo "✅ Подключение восстановлено"
+            echo "✅ Connection restored"
             return 0
         else
-            echo "❌ Не удалось восстановить подключение"
+            echo "❌ Failed to restore connection"
             return 1
         fi
     else
-        echo "✅ Подключение активно"
+        echo "✅ Connection is active"
         return 0
     fi
 }
 
-# Основная логика
+# Main logic
 while true; do
     show_menu
     read choice
     case $choice in
         1)
             show_header
-            echo "Установка Hyperspace Node..."
+            echo "Installing Hyperspace Node..."
             curl https://download.hyper.space/api/install | bash
             
-            # Перезагружаем окружение
-            # Проверяем, не добавлен ли уже путь
+            # Reload environment
+            # Check if the path has been added already
             if ! echo $PATH | grep -q "/root/.aios"; then
                 export PATH="$PATH:/root/.aios"
             fi
             source /root/.bashrc
             
-            # Автоматическая настройка ключей после установки
-            echo "Подождите 5 секунд, пока система инициализируется..."
+            # Automatic setup of keys after installation
+            echo "Please wait 5 seconds while the system initializes..."
             sleep 5
             
             if ! command -v aios-cli &> /dev/null; then
-                echo "Ошибка: aios-cli не установлен корректно."
-                echo "Попробуйте выполнить следующие команды вручную:"
+                echo "Error: aios-cli is not installed correctly."
+                echo "Try running the following commands manually:"
                 echo "1. source /root/.bashrc"
                 echo "2. aios-cli hive import-keys ./my.pem"
-                echo "Нажмите Enter для продолжения..."
+                echo "Press Enter to continue..."
                 read
                 continue
             fi
             
             setup_keys
             
-            echo "Установка завершена. Нажмите Enter для продолжения..."
+            echo "Installation completed. Press Enter to continue..."
             read
             ;;
         2)
@@ -454,54 +452,54 @@ while true; do
                 read node_choice
                 case $node_choice in
                     1)
-                        echo "Очистка старых сессий..."
+                        echo "Clearing old sessions..."
                         if check_node_running; then
-                            echo "Нода уже работает. Хотите перезапустить? (y/N): "
+                            echo "Node is already running. Do you want to restart? (y/N): "
                             read restart
                             if [[ $restart != "y" && $restart != "Y" ]]; then
-                                echo "Отмена запуска"
+                                echo "Cancelling start"
                                 return
                             fi
                         fi
-                        # Сначала останавливаем существующие процессы
-                        echo "Останавливаем существующие процессы..."
+                        # First, stop existing processes
+                        echo "Stopping existing processes..."
                         pkill -f "__aios-kernel" || true
                         pkill -f "aios-cli start" || true
                         sleep 2
                         
-                        # Находим и закрываем все сессии Hypernodes
+                        # Find and close all Hypernodes sessions
                         screen -ls | grep Hypernodes | cut -d. -f1 | while read pid; do
-                            echo "Закрываем сессию с PID: $pid"
+                            echo "Closing session with PID: $pid"
                             kill $pid 2>/dev/null || true
                         done
                         sleep 2
                         
-                        # Исправляем PATH
+                        # Fix PATH
                         export PATH="/root/.aios:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
                         
-                        echo "Запускаем ноду..."
-                        echo "Запуск в screen..."
+                        echo "Starting the node..."
+                        echo "Starting in screen..."
                         screen -dmS Hypernodes bash -c "source /root/.bashrc && aios-cli start"
-                        echo "Ожидание запуска ноды..."
+                        echo "Waiting for the node to start..."
                         start_time=$(date +%s)
-                        timeout=300  # 5 минут таймаут
+                        timeout=300  # 5 minutes timeout
                         
                         while true; do
                             current_time=$(date +%s)
                             elapsed=$((current_time - start_time))
                             
-                            # Проверяем процессы
+                            # Check processes
                             if ps aux | grep -q "[_]aios-kernel"; then
                                 if aios-cli hive whoami | grep -q "Public"; then
-                                    echo "✅ Нода успешно запущена и подключена"
+                                    echo "✅ Node successfully started and connected"
                                     break
                                 fi
                             fi
                             
-                            # Проверяем таймаут
+                            # Check timeout
                             if [ $elapsed -gt $timeout ]; then
-                                echo "❌ Превышен таймаут запуска"
-                                echo "Перезапускаем ноду..."
+                                echo "❌ Start timeout exceeded"
+                                echo "Restarting the node..."
                                 pkill -9 -f "aios"
                                 sleep 2
                                 screen -dmS Hypernodes bash -c "source /root/.bashrc && aios-cli start"
@@ -513,67 +511,67 @@ while true; do
                             sleep 5
                         done
                         
-                        # Проверяем, запустилась ли нода
+                        # Check if the node started
                         if screen -ls | grep -q "Hypernodes"; then
-                            echo "Нода успешно запущена"
-                            # Проверяем процесс
+                            echo "Node successfully started"
+                            # Check process
                             ps aux | grep "[a]ios-cli"
-                            echo "Проверка лога запуска..."
+                            echo "Checking start log..."
                             screen -r Hypernodes -X hardcopy .screen.log
-                            echo "Последние логи:"
+                            echo "Latest logs:"
                             tail -n 5 .screen.log
                         else
-                            echo "Ошибка: Нода не запустилась"
-                            echo "Проверка окружения:"
+                            echo "Error: Node did not start"
+                            echo "Checking environment:"
                             echo "PATH=$PATH"
-                            echo "Проверка процессов:"
+                            echo "Checking processes:"
                             ps aux | grep "[a]ios"
-                            echo "Пробуем альтернативный способ запуска..."
+                            echo "Trying an alternative way to start..."
                             screen -dmS Hypernodes bash -c "source /root/.bashrc && aios-cli start"
                             sleep 5
                             if screen -ls | grep -q "Hypernodes"; then
-                                echo "Нода запущена альтернативным способом"
+                                echo "Node started in an alternative way"
                                 ps aux | grep "[a]ios-cli"
                             else
-                                echo "Ошибка: Не удалось запустить ноду"
-                                echo "Последние ошибки:"
-                                tail -n 20 ~/.aios/logs/* 2>/dev/null || echo "Логи не найдены"
+                                echo "Error: Failed to start the node"
+                                echo "Latest errors:"
+                                tail -n 20 ~/.aios/logs/* 2>/dev/null || echo "Logs not found"
                             fi
                         fi
-                        echo "Нода запущена в screen сессии 'Hypernodes'"
-                        echo "Чтобы посмотреть логи, используйте команду: screen -r Hypernodes"
-                        echo "Для выхода из логов нажмите Ctrl+A, затем D"
-                        echo "Нажмите Enter для продолжения..."
+                        echo "Node started in screen session 'Hypernodes'"
+                        echo "To view the logs, use the command: screen -r Hypernodes"
+                        echo "To exit the logs, press Ctrl+A, then D"
+                        echo "Press Enter to continue..."
                         read
                         ;;
                     2)
-                        # Сначала проверяем статус ноды и подключения
-                        echo "Проверка статуса перед установкой tier..."
-                        echo "1. Проверка процессов:"
+                        # First, check the status of the node and connection
+                        echo "Checking status before setting tier..."
+                        echo "1. Checking processes:"
                         ps aux | grep "[a]ios"
                         echo
-                        echo "2. Проверка подключения:"
+                        echo "2. Checking connection:"
                         if ! aios-cli hive whoami | grep -q "Public:"; then
-                            echo "❌ Нода не подключена к Hive"
-                            echo "Сначала выполните вход:"
+                            echo "❌ Node is not connected to Hive"
+                            echo "Please log in first:"
                             aios-cli hive login
                             sleep 2
                         fi
                         
-                        echo "Выберите tier (3 для RAM > 8GB, 5 для RAM < 8GB):"
-                        echo "Рекомендации по tier:"
-                        echo "- Tier 5: для легких моделей (phi-2 ~1.67GB)"
-                        echo "- Tier 3: для тяжелых моделей (>8GB RAM)"
+                        echo "Select tier (3 for RAM > 8GB, 5 for RAM < 8GB):"
+                        echo "Tier recommendations:"
+                        echo "- Tier 5: for light models (phi-2 ~1.67GB)"
+                        echo "- Tier 3: for heavy models (>8GB RAM)"
                         read tier
-                        echo "Устанавливаем tier $tier..."
-                        # Пробуем несколько раз
+                        echo "Setting tier $tier..."
+                        # Try several times
                         max_attempts=3
                         attempt=1
                         success=false
                         while [ $attempt -le $max_attempts ]; do
-                            echo "Попытка установки tier $attempt из $max_attempts..."
+                            echo "Attempting to set tier $attempt of $max_attempts..."
                             if aios-cli hive select-tier $tier 2>&1 | grep -q "Failed"; then
-                                echo "❌ Попытка $attempt не удалась"
+                                echo "❌ Attempt $attempt failed"
                                 sleep 5
                             else
                                 success=true
@@ -583,177 +581,177 @@ while true; do
                         done
                         
                         if [ "$success" = true ]; then
-                            echo "✅ Tier $tier успешно установлен"
-                            echo "Проверяем подключение:"
+                            echo "✅ Tier $tier successfully set"
+                            echo "Checking connection:"
                             aios-cli hive whoami
                         else
-                            echo "❌ Ошибка при установке tier"
-                            echo "Пробуем альтернативный способ..."
-                            echo "1. Перезапускаем окружение"
+                            echo "❌ Error setting tier"
+                            echo "Trying alternative method..."
+                            echo "1. Restarting the environment"
                             source /root/.bashrc
                             sleep 2
-                            echo "2. Проверяем login"
+                            echo "2. Checking login"
                             aios-cli hive login
                             sleep 2
-                            echo "3. Пробуем установить tier снова"
+                            echo "3. Trying to set tier again"
                             aios-cli hive select-tier $tier
-                            echo "Проверяем статус ноды:"
+                            echo "Checking node status:"
                             ps aux | grep "[a]ios"
                             echo
-                            echo "Проверяем логи:"
-                            tail -n 20 ~/.aios/logs/* 2>/dev/null || echo "Логи не найдены"
+                            echo "Checking logs:"
+                            tail -n 20 ~/.aios/logs/* 2>/dev/null || echo "Logs not found"
                         fi
-                        echo "Нажмите Enter для продолжения..."
+                        echo "Press Enter to continue..."
                         read
                         ;;
                     3)
-                        echo "Добавляем модель по умолчанию..."
+                        echo "Adding default model..."
                         aios-cli models add hf:TheBloke/phi-2-GGUF:phi-2.Q4_K_M.gguf
                         echo
-                        echo "Проверяем активные модели:"
+                        echo "Checking active models:"
                         aios-cli models list
                         echo
                         if aios-cli models list | grep -q "phi-2"; then
-                            echo "✅ Модель phi-2 успешно добавлена"
+                            echo "✅ Model phi-2 successfully added"
                         else
-                            echo "❌ Ошибка: Модель не найдена в списке активных"
-                            echo "Попробуйте добавить модель снова"
+                            echo "❌ Error: Model not found in the active list"
+                            echo "Try adding the model again"
                         fi
-                        echo "Нажмите Enter для продолжения..."
+                        echo "Press Enter to continue..."
                         read
                         ;;
                     4)
-                        echo "Подключаемся к Hive..."
-                        echo "1. Останавливаем текущие процессы..."
+                        echo "Connecting to Hive..."
+                        echo "1. Stopping current processes..."
                         aios-cli kill
                         pkill -9 -f "aios"
                         sleep 2
                         
-                        echo "2. Запускаем ноду заново..."
-                        echo "Проверяем ключи..."
+                        echo "2. Restarting the node..."
+                        echo "Checking keys..."
                         
-                        echo "Введите приватный ключ:"
+                        echo "Enter private key:"
                         read private_key
                         echo "$private_key" > my.pem
                         chmod 600 my.pem
                         
-                        echo "Импортируем ключи..."
+                        echo "Importing keys..."
                         aios-cli hive import-keys ./my.pem
                         sleep 2
                         
-                        echo "Выполняем вход..."
+                        echo "Logging in..."
                         aios-cli hive login
                         sleep 2
                         
-                        echo "Устанавливаем tier 5..."
+                        echo "Setting tier 5..."
                         aios-cli hive select-tier 5
                         sleep 2
                         
-                        echo "Запускаем в screen..."
+                        echo "Starting in screen..."
                         screen -dmS Hypernodes aios-cli start
                         sleep 2
                         
-                        echo "Добавляем модель phi-2..."
+                        echo "Adding model phi-2..."
                         aios-cli models add hf:TheBloke/phi-2-GGUF:phi-2.Q4_K_M.gguf
                         sleep 2
                         
-                        echo "Подключаемся к Hive..."
+                        echo "Connecting to Hive..."
                         aios-cli hive connect
                         sleep 5
                         
-                        echo "Проверяем статус ноды..."
+                        echo "Checking node status..."
                         if aios-cli hive whoami | grep -q "Public:"; then
-                            echo "✅ Нода готова к работе"
+                            echo "✅ Node ready to work"
                         else
-                            echo "❌ Ошибка подключения"
+                            echo "❌ Connection error"
                         fi
-                        echo "Нажмите Enter для продолжения..."
+                        echo "Press Enter to continue..."
                         read
                         ;;
                     5)
-                        echo "Проверка заработанных поинтов..."
+                        echo "Checking earned points..."
                         aios-cli hive points
-                        echo "Нажмите Enter для продолжения..."
+                        echo "Press Enter to continue..."
                         read
                         ;;
                     6)
-                        echo "Управление моделями:"
-                        echo "1. Активные модели:"
+                        echo "Managing models:"
+                        echo "1. Active models:"
                         aios-cli models list
                         echo
-                        echo "2. Доступные модели:"
+                        echo "2. Available models:"
                         aios-cli models available
-                        echo "Нажмите Enter для продолжения..."
+                        echo "Press Enter to continue..."
                         read
                         ;;
                     7)
-                        echo "Проверка статуса подключения..."
-                        echo "1. Статус подключения:"
+                        echo "Checking connection status..."
+                        echo "1. Connection status:"
                         aios-cli hive whoami
                         echo
-                        echo "2. Проверка points:"
+                        echo "2. Checking points:"
                         aios-cli hive points
                         echo
-                        echo "3. Проверка моделей:"
+                        echo "3. Checking models:"
                         aios-cli models available
-                        echo "Нажмите Enter для продолжения..."
+                        echo "Press Enter to continue..."
                         read
                         ;;
                     8)
-                        echo "Останавливаем ноду..."
+                        echo "Stopping the node..."
                         aios-cli kill
                         pkill -9 -f "aios"
                         sleep 2
                         
-                        # Проверяем, остановились ли процессы
+                        # Check if processes stopped
                         if pgrep -f "aios" > /dev/null; then
-                            echo "❌ Не удалось остановить все процессы"
-                            echo "Активные процессы:"
+                            echo "❌ Failed to stop all processes"
+                            echo "Active processes:"
                             ps aux | grep "[a]ios"
                         else
-                            echo "✅ Нода успешно остановлена"
+                            echo "✅ Node successfully stopped"
                         fi
-                        echo "Нажмите Enter для продолжения..."
+                        echo "Press Enter to continue..."
                         read
                         ;;
                     9)
-                        echo "Выполняем полный перезапуск с очисткой..."
-                        echo "1. Останавливаем все процессы..."
+                        echo "Executing full restart with cleanup..."
+                        echo "1. Stopping all processes..."
                         aios-cli kill
                         pkill -f "aios"
                         sleep 2
                         
-                        echo "2. Перезагружаем окружение..."
+                        echo "2. Reloading environment..."
                         source /root/.bashrc
                         sleep 2
                         
-                        echo "3. Запускаем ноду..."
+                        echo "3. Starting the node..."
                         aios-cli start
                         sleep 5
                         
-                        echo "4. Выполняем вход..."
+                        echo "4. Logging in..."
                         aios-cli hive login
                         sleep 2
                         
-                        echo "5. Устанавливаем tier 3..."
+                        echo "5. Setting tier 3..."
                         aios-cli hive select-tier 3
                         sleep 2
                         
-                        echo "6. Добавляем модель phi-2..."
+                        echo "6. Adding model phi-2..."
                         aios-cli models add hf:TheBloke/phi-2-GGUF:phi-2.Q4_K_M.gguf
                         sleep 2
                         
-                        echo "7. Подключаемся к Hive..."
+                        echo "7. Connecting to Hive..."
                         aios-cli hive connect
                         
-                        echo "8. Проверяем статус..."
-                        echo "Статус подключения:"
+                        echo "8. Checking status..."
+                        echo "Connection status:"
                         aios-cli hive whoami
                         echo
-                        echo "Активные модели:"
+                        echo "Active models:"
                         aios-cli models list
                         
-                        echo "Нажмите Enter для продолжения..."
+                        echo "Press Enter to continue..."
                         read
                         ;;
                     10)
@@ -765,49 +763,49 @@ while true; do
         3)
             show_header
             check_node_status
-            echo "Нажмите Enter для продолжения..."
+            echo "Press Enter to continue..."
             read
             ;;
         4)
             show_header
-            echo "Внимание! Вы собираетесь удалить ноду Hyperspace."
-            echo "Это действие удалит только файлы и настройки Hyperspace Node."
-            echo "Другие установленные ноды не будут затронуты."
+            echo "Warning! You are about to remove the Hyperspace node."
+            echo "This action will only delete the files and settings of the Hyperspace Node."
+            echo "Other installed nodes will not be affected."
             echo
-            echo -n "Вы уверены? (y/N): "
+            echo -n "Are you sure? (y/N): "
             read confirm
             if [[ $confirm == "y" || $confirm == "Y" ]]; then
-                echo "Останавливаем Hyperspace ноду..."
+                echo "Stopping the Hyperspace node..."
                 aios-cli kill
-                echo "Удаляем файлы Hyperspace ноды..."
+                echo "Removing Hyperspace node files..."
                 if [ -d ~/.aios ]; then
-                    echo "Найдена директория ~/.aios"
-                    echo -n "Удалить ~/.aios? (y/N): "
+                    echo "Directory ~/.aios found"
+                    echo -n "Delete ~/.aios? (y/N): "
                     read confirm_aios
                     if [[ $confirm_aios == "y" || $confirm_aios == "Y" ]]; then
                         rm -rf ~/.aios
-                        echo "Директория ~/.aios удалена"
+                        echo "Directory ~/.aios deleted"
                     fi
                 fi
                 
                 if [ -f my.pem ]; then
-                    echo -n "Удалить файл my.pem? (y/N): "
+                    echo -n "Delete file my.pem? (y/N): "
                     read confirm_pem
                     if [[ $confirm_pem == "y" || $confirm_pem == "Y" ]]; then
                         rm -f my.pem
-                        echo "Файл my.pem удален"
+                        echo "File my.pem deleted"
                     fi
                 fi
                 
-                echo "Удаляем установленные пакеты..."
-                echo "Для полного удаления пакетов выполните команду:"
-                echo "apt remove aios-cli (если установлено через apt)"
-                echo "Нода успешно удалена."
-                echo "Нажмите Enter для продолжения..."
+                echo "Removing installed packages..."
+                echo "For complete removal of packages, execute the command:"
+                echo "apt remove aios-cli (if installed via apt)"
+                echo "Node successfully removed."
+                echo "Press Enter to continue..."
                 read
             else
-                echo "Отмена удаления."
-                echo "Нажмите Enter для продолжения..."
+                echo "Deletion cancelled."
+                echo "Press Enter to continue..."
                 read
             fi
             ;;
@@ -815,15 +813,15 @@ while true; do
             show_instructions
             ;;
         6)
-            echo "Спасибо за использование установщика!"
-            echo "Не забудьте подписаться на @nodetrip в Telegram"
+            echo "Thank you for using the installer!"
+            echo "Don't forget to subscribe to @nodetrip on Telegram"
             exit 0
             ;;
     esac
 done
 
-# Добавляем проверку в основной цикл
+# Add a check in the main loop
 while true; do
     check_connection
-    sleep 300 # Проверяем каждые 5 минут
-done & 
+    sleep 300 # Check every 5 minutes
+done &
