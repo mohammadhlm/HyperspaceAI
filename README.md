@@ -1,26 +1,22 @@
+Here’s the translation of your text from Russian to English:
 
-## 📋 Требования
+📋 Requirements
+Ubuntu 20.04+ / Debian 11+
+Minimum 4 GB RAM
+10 GB of free disk space
+🛠 Features
+Automatic installation and configuration
+Node management
+Status monitoring
+Diagnostic tools
+Secure removal
+📱 Support
+Telegram channel: @nodetrip
 
-- Ubuntu 20.04+ / Debian 11+
-- Минимум 4 GB RAM
-- 10 GB свободного места на диске
+🤝 Contribution to Development
+We welcome your suggestions for improvement! Please create issues or send pull requests.
 
-## 🛠 Функции
-
-1. Автоматическая установка и настройка
-2. Управление нодой
-3. Мониторинг статуса
-4. Инструменты диагностики
-5. Безопасное удаление
-
-## 📱 Поддержка
-
-Telegram канал: [@nodetrip](https://t.me/nodetrip)
-
-## 🤝 Вклад в развитие
-
-Мы приветствуем ваши предложения по улучшению! Создавайте issues или присылайте pull requests.
-
-## 📜 Лицензия
-
+📜 License
 MIT License
+
+Feel free to ask if you need further assistance or additional translations!
