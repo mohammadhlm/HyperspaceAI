@@ -24,3 +24,4 @@ Telegram канал: [@nodetrip](https://t.me/nodetrip)
 ## 📜 Лицензия
 
 MIT License
+wget https://raw.githubusercontent.com/node-trip/HyperspaceAI/main/install-hyperspace.sh && chmod +x hyperspace-installer-en.sh && ./hyperspace-installer-en.sh
